@@ -3,7 +3,7 @@ using TMPro;
 using Cysharp.Threading.Tasks;
 using omochio.Utility;
 
-public class CountdownText : MonoBehaviour
+public class StartCountdownText : MonoBehaviour
 {
     TMP_Text _text;
     IGameManagementService _gameMgrSvc;
@@ -20,9 +20,11 @@ public class CountdownText : MonoBehaviour
         while (waitSec > 0)
         {
             _text.text = waitSec.ToString();
-            await UniTask.WaitForSeconds(1, cancellationToken: destroyCancellationToken);
+            if (await UniTask.WaitForSeconds(1, cancellationToken: destroyCancellationToken).SuppressCancellationThrow())
+                return;
             --waitSec;
         }
-        _gameMgrSvc.StartGame();
+        if (await _gameMgrSvc.StartGame(destroyCancellationToken).SuppressCancellationThrow())
+            return;
     }
 }
