@@ -16,6 +16,6 @@ public class ScoreText : MonoBehaviour
 
     void Update()
     {
-        _text.text = _scoreSvc.Score.ToString();
+        _text.SetText(_scoreSvc.Score.ToString());
     }
 }

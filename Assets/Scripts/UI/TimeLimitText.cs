@@ -17,6 +17,6 @@ public class TimeLimitText : MonoBehaviour
 
     void Update()
     {
-        _text.text = _gameMgrSvc.RemainTimeLimitSec.ToString();
+        _text.SetText(_text.text[0..10] + _gameMgrSvc.RemainTimeLimitSec.ToString());
     }
 }
