@@ -1,21 +1,24 @@
 using UnityEngine;
 using TMPro;
+using UniRx;
+using TNRD;
 using omochio.Utility;
 
 public class QuestionText : MonoBehaviour
 {
     TMP_Text _text;
-    IQuestionService _questionService;
+    [SerializeField]
+    SerializableInterface<IQuestionService> _questionSvc;
+    IQuestionService QuestionSvc => _questionSvc.Value;
 
     void Awake()
     {
         this.TryGetComponentDebugError(out _text);
-        _questionService = this.FindObjectOfInterface<IQuestionService>();
-        if (_questionService == null) Debug.LogError("QuestionService not found!");
     }
 
-    void Update()
+    void Start()
     {
-        _text.text = new string('!', _questionService.ExclCount) + _questionService.TextBool.ToString();
+        QuestionSvc.ExclCountObservable
+            .Subscribe(_ => _text.SetText(new string('!', QuestionSvc.ExclCount) + QuestionSvc.TextBool.ToString()));
     }
 }
