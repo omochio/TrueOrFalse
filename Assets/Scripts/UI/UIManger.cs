@@ -25,7 +25,11 @@ public class UIManager : MonoBehaviour
         // タイトル
         GameStateManager.CurrentGameStateObservable
             .Where(state => state == GameState.Title)
-            .Subscribe(_ => _titleCanvas.gameObject.SetActive(true));
+            .Subscribe(_ =>
+            {
+                ShowCursor();
+                _titleCanvas.gameObject.SetActive(true);
+            });
         GameStateManager.CurrentGameStateObservable
             .Where(state => state != GameState.Title)
             .Subscribe(_ => _titleCanvas.gameObject.SetActive(false));
@@ -33,7 +37,11 @@ public class UIManager : MonoBehaviour
         // ゲーム開始前カウントダウン
         GameStateManager.CurrentGameStateObservable
             .Where(state => state == GameState.Ready)
-            .Subscribe(_ => _ReadyCanvas.gameObject.SetActive(true));
+            .Subscribe(_ =>
+            {
+                HideCursor();
+                _ReadyCanvas.gameObject.SetActive(true);
+            });
         GameStateManager.CurrentGameStateObservable
             .Where(state => state != GameState.Ready)
             .Subscribe(_ => _ReadyCanvas.gameObject.SetActive(false));
@@ -41,7 +49,11 @@ public class UIManager : MonoBehaviour
         // ゲームプレイ
         GameStateManager.CurrentGameStateObservable
             .Where(state => state == GameState.Gameplay)
-            .Subscribe(_ => _gameplayCanvas.gameObject.SetActive(true));
+            .Subscribe(_ => 
+            { 
+                HideCursor();
+                _gameplayCanvas.gameObject.SetActive(true); 
+            });
         GameStateManager.CurrentGameStateObservable
             .Where(state => state != GameState.Gameplay)
             .Subscribe(_ => _gameplayCanvas.gameObject.SetActive(false));
@@ -49,7 +61,11 @@ public class UIManager : MonoBehaviour
         // ゲームオーバー
         GameStateManager.CurrentGameStateObservable
             .Where(state => state == GameState.GameOver)
-            .Subscribe(_ => _gameOverCanvas.gameObject.SetActive(true));
+            .Subscribe(_ => 
+            { 
+                ShowCursor();
+                _gameOverCanvas.gameObject.SetActive(true); 
+            });
         GameStateManager.CurrentGameStateObservable
             .Where(state => state != GameState.GameOver)
             .Subscribe(_ => _gameOverCanvas.gameObject.SetActive(false));
@@ -57,9 +73,25 @@ public class UIManager : MonoBehaviour
         // ポーズ
         GameStateManager.CurrentGameStateObservable
             .Where(state => state == GameState.Pause)
-            .Subscribe(_ => _pauseCanvas.gameObject.SetActive(true));
+            .Subscribe(_ => 
+            { 
+                ShowCursor();
+                _pauseCanvas.gameObject.SetActive(true); 
+            });
         GameStateManager.CurrentGameStateObservable
             .Where(state => state != GameState.Pause)
             .Subscribe(_ => _pauseCanvas.gameObject.SetActive(false));
+    }
+
+    void HideCursor()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    void ShowCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 }

@@ -25,7 +25,7 @@ public class TimerText : MonoBehaviour
         TimerSvc.RemainingTimeSecObservable
             .Subscribe(time => {
                 if (_textSkipLength > 0)
-                    _text.SetText(_text.text[0.._textSkipLength] + time.ToString());
+                    _text.SetText($"<sprite name=\"TimerIcon\">{time}");
                 else
                     _text.SetText(time.ToString());
                 });

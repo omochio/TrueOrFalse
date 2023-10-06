@@ -19,6 +19,6 @@ public class QuestionText : MonoBehaviour
     void Start()
     {
         QuestionSvc.ExclCountObservable
-            .Subscribe(_ => _text.SetText(new string('!', QuestionSvc.ExclCount) + QuestionSvc.TextBool.ToString()));
+            .Subscribe(_ => _text.SetText(new string('!', QuestionSvc.ExclCount) + $"<color=#569cd6>{QuestionSvc.TextBool}</color>"));
     }
 }

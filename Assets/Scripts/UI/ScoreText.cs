@@ -36,7 +36,7 @@ public class ScoreText : MonoBehaviour
                 break;
             case ScoreType.High:
                 ScoreSvc.HighScoreObservable
-                    .Subscribe(_ => _text.SetText(ScoreSvc.HighScore.ToString()));
+                    .Subscribe(_ => _text.SetText($"<sprite name=\"CrownIcon\">{ScoreSvc.HighScore}"));
                 break;
         }
     }
