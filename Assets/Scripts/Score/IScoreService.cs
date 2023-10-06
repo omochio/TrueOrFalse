@@ -6,4 +6,5 @@ public interface IScoreService
     public IObservable<int> ScoreObservable { get; }
     public int HighScore { get; }
     public IObservable<int> HighScoreObservable { get; }
+    public IObservable<bool> IsHighScoreUpdatedObservable { get; }
 }

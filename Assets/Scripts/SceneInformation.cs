@@ -6,11 +6,9 @@ public class SceneInformation : ScriptableObject, ISerializationCallbackReceiver
 {
     [SerializeField]
     GameState _initState;
-    public GameState InitState
-    {
-        get => _initState;
-        set => _initState = value;
-    }
+
+    [System.NonSerialized]
+    public GameState InitState;
 
     public void OnAfterDeserialize()
     {

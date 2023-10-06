@@ -12,7 +12,7 @@ public class ScoreService : MonoBehaviour, IScoreService
     SerializableInterface<IGameStateManager> _gameStateMgr;
     IGameStateManager GameStateMgr => _gameStateMgr.Value;
 
-    ReactiveProperty<int> _scoreRP { get; } = new();
+    ReactiveProperty<int> _scoreRP = new();
     public int Score
     {
         get => _scoreRP.Value;
@@ -24,7 +24,7 @@ public class ScoreService : MonoBehaviour, IScoreService
     }
     public IObservable<int> ScoreObservable => _scoreRP;
 
-    ReactiveProperty<int> _highScoreRP { get; } = new();
+    ReactiveProperty<int> _highScoreRP = new();
     public int HighScore
     {
         get => _highScoreRP.Value;
@@ -35,6 +35,9 @@ public class ScoreService : MonoBehaviour, IScoreService
         }
     }
     public IObservable<int> HighScoreObservable => _highScoreRP;
+
+    ReactiveProperty<bool> _isHighScoreUpdatedRP = new();
+    public IObservable<bool> IsHighScoreUpdatedObservable => _isHighScoreUpdatedRP;
 
     string _filePath;
 
@@ -47,19 +50,21 @@ public class ScoreService : MonoBehaviour, IScoreService
     {
         _scoreRP.AddTo(this).ToUniTask().Forget();
         _highScoreRP.AddTo(this).ToUniTask().Forget();
+        _isHighScoreUpdatedRP.AddTo(this).ToUniTask().Forget();
 
         GameStateMgr.CurrentGameStateObservable
             .Where(state => state == GameState.GameOver)
             .Where(_ => Score > HighScore)
             .Subscribe(async _ => {
-                Debug.Log($"Save");
                 HighScore = Score;
                 await SaveScore().SuppressCancellationThrow();
-                Debug.Log($"Saved");
             });
 
+        ScoreObservable
+            .Where(_ => Score > HighScore)
+            .Subscribe(_ => _isHighScoreUpdatedRP.Value = true);
+
         await LoadScore().SuppressCancellationThrow();
-        Debug.Log($"Load: {HighScore}");
     }
 
     async UniTask LoadScore()

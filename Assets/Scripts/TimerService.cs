@@ -43,7 +43,6 @@ public class TimerService : MonoBehaviour, ITimerService
             {
                 while (RemainingTimeSec > 0)
                 {
-                    //Debug.Log(RemainingTimeSec);
                     await UniTask.Delay(TimeSpan.FromSeconds(1));
                     RemainingTimeSec--;
                 }

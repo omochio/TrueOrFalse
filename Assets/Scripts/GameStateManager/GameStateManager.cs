@@ -40,9 +40,6 @@ namespace TrueOrFalse.GameState
         public void Start()
         {
             _currentGameStateRP.AddTo(this);
-            // Temp
-            CurrentGameStateObservable
-                .Subscribe(state => Debug.Log(state));
         }
 
         public async void Reload()

@@ -1,3 +1,4 @@
+using System.Drawing;
 using UnityEngine;
 using TMPro;
 using TNRD;
@@ -37,6 +38,12 @@ public class ScoreText : MonoBehaviour
             case ScoreType.High:
                 ScoreSvc.HighScoreObservable
                     .Subscribe(_ => _text.SetText($"<sprite name=\"CrownIcon\">{ScoreSvc.HighScore}"));
+                ScoreSvc.IsHighScoreUpdatedObservable
+                    .Where(x => x)
+                    .Subscribe(_ =>
+                    {
+                        _text.SetText($"<color=#DCDCAA>NEW RECORD</color>");
+                    });
                 break;
         }
     }

@@ -49,19 +49,6 @@ public class GameplayInputProvider : MonoBehaviour, IGameplayInputProvider, Defa
         _isFalseInvokedRP.AddTo(this);
         _isSkipInvokedRP.AddTo(this);
 
-        //_isTrueInvokedRP.DoOnCompleted(() => {
-        //    IsTrueInvoked = false;
-        //    Debug.Log("Crean");
-        //    });
-        //_isFalseInvokedRP.DoOnCompleted(() => {
-        //    IsFalseInvoked = false;
-        //    Debug.Log("Crean");
-        //});
-        //_isSkipInvokedRP.DoOnCompleted(() => { 
-        //    IsSkipInvoked = false; 
-        //    Debug.Log("Crean"); 
-        //});
-
         GameStateMgr.CurrentGameStateObservable
             .Where(state => state == GameState.Gameplay)
             .Subscribe(_ => _iptAction.Gameplay.Enable());
