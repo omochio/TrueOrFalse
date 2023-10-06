@@ -1,29 +1,40 @@
-using System.Threading;
+using System;
 using System.IO;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using UniRx;
+using TNRD;
+using TrueOrFalse.GameState;
 
 public class ScoreService : MonoBehaviour, IScoreService
 {
-    int _score;
-    public int Score 
-    {
-        get => _score;
-        set
-        {
-            if (value >= 0) _score = value;
-        }
-    }
+    [SerializeField]
+    SerializableInterface<IGameStateManager> _gameStateMgr;
+    IGameStateManager GameStateMgr => _gameStateMgr.Value;
 
-    int _highScore;
-    public int HighScore 
+    ReactiveProperty<int> _scoreRP { get; } = new();
+    public int Score
     {
-        get => _highScore;
-        private set
-        {
-            if (value >= 0) _highScore = value;
+        get => _scoreRP.Value;
+        set 
+        { 
+            if (value >= 0) 
+                _scoreRP.Value = value;
         }
     }
+    public IObservable<int> ScoreObservable => _scoreRP;
+
+    ReactiveProperty<int> _highScoreRP { get; } = new();
+    public int HighScore
+    {
+        get => _highScoreRP.Value;
+        private set 
+        { 
+            if (value >= 0) 
+                _highScoreRP.Value = value;
+        }
+    }
+    public IObservable<int> HighScoreObservable => _highScoreRP;
 
     string _filePath;
 
@@ -34,7 +45,21 @@ public class ScoreService : MonoBehaviour, IScoreService
 
     async void Start()
     {
+        _scoreRP.AddTo(this).ToUniTask().Forget();
+        _highScoreRP.AddTo(this).ToUniTask().Forget();
+
+        GameStateMgr.CurrentGameStateObservable
+            .Where(state => state == GameState.GameOver)
+            .Where(_ => Score > HighScore)
+            .Subscribe(async _ => {
+                Debug.Log($"Save");
+                HighScore = Score;
+                await SaveScore().SuppressCancellationThrow();
+                Debug.Log($"Saved");
+            });
+
         await LoadScore().SuppressCancellationThrow();
+        Debug.Log($"Load: {HighScore}");
     }
 
     async UniTask LoadScore()
@@ -62,14 +87,5 @@ public class ScoreService : MonoBehaviour, IScoreService
             await writer.WriteAsync(json);
         }
         return;
-    }
-
-    public async UniTask UpdateHighScore()
-    {
-        if (Score > HighScore)
-        {
-            HighScore = Score;
-            await SaveScore();
-        }
     }
 }

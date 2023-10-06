@@ -1,10 +1,24 @@
+using System;
 using UnityEngine;
-using omochio.Utility;
+using UniRx;
+using TNRD;
+using TrueOrFalse.GameState;
+
+using Random = UnityEngine.Random;
 
 public class QuestionService : MonoBehaviour, IQuestionService
 {
-    IGameManagementService _gameMgrSvc;
-    IScoreService _scoreSvc;
+    [SerializeField]
+    SerializableInterface<IGameStateManager> _gameStateMgr;
+    IGameStateManager GameStateMgr => _gameStateMgr.Value;
+
+    [SerializeField]
+    SerializableInterface<IScoreService> _scoreSvc;
+    IScoreService ScoreSvc => _scoreSvc.Value;
+
+    [SerializeField]
+    SerializableInterface<IGameplayInputProvider> _gameplayIpt;
+    IGameplayInputProvider GameplayIpt => _gameplayIpt.Value;
 
     [SerializeField]
     Vector2Int _exclRange;
@@ -12,26 +26,48 @@ public class QuestionService : MonoBehaviour, IQuestionService
     [SerializeField, Min(0)]
     int _scoreByExcl;
 
-    int _exclCount;
-    public int ExclCount 
-    {
-        get => _exclCount; 
-        private set
-        {
-            if (value >= 0) _exclCount = value;
-        }
-    }
-
     public bool TextBool { get; private set; }
 
     public bool CorrectAnswer => ExclCount % 2 == 0 ? TextBool : !TextBool;
 
-    void Awake()
+    ReactiveProperty<int> _exclCountRP = new();
+    public int ExclCount
     {
-        _gameMgrSvc = this.FindObjectOfInterface<IGameManagementService>();
-        if (_gameMgrSvc == null) Debug.LogError("GameManagementService not found!");
-        _scoreSvc = this.FindObjectOfInterface<IScoreService>();
-        if (_scoreSvc == null) Debug.LogError("ScoreService not found!");
+        get => _exclCountRP.Value;
+        private set
+        {
+            if (value >= 0) _exclCountRP.Value = value;
+        }
+    }
+    public IObservable<int> ExclCountObservable => _exclCountRP;
+
+
+    void Start()
+    {
+        _exclCountRP.AddTo(this);
+
+        // 初期化
+        ResetQuestion();
+
+        // 入力
+        GameplayIpt.IsTrueInvokedObservable
+            .Where(x => x)
+            .Subscribe(_ => {
+                Answer(true);
+                GameplayIpt.IsTrueInvoked = false;
+            });
+        GameplayIpt.IsFalseInvokedObservable
+            .Where(x => x)
+            .Subscribe(_ => {
+                Answer(false);
+                GameplayIpt.IsFalseInvoked = false;
+            });
+        GameplayIpt.IsSkipInvokedObservable
+            .Where(x => x)
+            .Subscribe(_ => {
+                Skip();
+                GameplayIpt.IsSkipInvoked = false;
+            });
     }
 
     public void ResetQuestion()
@@ -45,18 +81,15 @@ public class QuestionService : MonoBehaviour, IQuestionService
         if (answer == CorrectAnswer)
         {
             // 正解点 + !ボーナス
-            _scoreSvc.Score += _scoreByExcl * (ExclCount + 1);
+            ScoreSvc.Score += _scoreByExcl * (ExclCount + 1);
             ResetQuestion();
         }
         else
-        {
-            _gameMgrSvc.GameOver();
-        }
+            GameStateMgr.CurrentGameState = GameState.GameOver;
     }
 
     public void Skip()
     {
-        Debug.Log("Skipped!");
         ResetQuestion();
     }
 
